@@ -115,31 +115,41 @@ import html2pdf from "html2pdf.js/dist/html2pdf.min.js";
   const generatePDF = async () => {
     if (typeof window === "undefined") return; // Prevent SSR issues
     setIsGenerating(true);
-
+  
     try {
-        const html2pdf = (await import("html2pdf.js")).default;
-       await new Promise((resolve) => setTimeout(resolve, 100));
-
-        const element = document.getElementById("resume-pdf");
-        if (!element) {
-            console.error("Error: Element with ID 'resume-pdf' not found.");
-            return;
-        }
-        const opt = {
-            margin: [15, 15],
-            filename: "resume.pdf",
-            image: { type: "jpeg", quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        };
-
-        await html2pdf().set(opt).from(element).save();
+      const html2pdf = (await import("html2pdf.js")).default;
+      await new Promise((resolve) => setTimeout(resolve, 300)); // Delay for content rendering
+  
+      const element = document.getElementById("resume-pdf");
+      if (!element) {
+        console.error("Error: Element with ID 'resume-pdf' not found.");
+        return;
+      }
+  
+      // Ensure content inside #resume-pdf is correctly populated
+      element.style.position = "static";
+      element.style.visibility = "visible";
+  
+      const opt = {
+        margin: [15, 15],
+        filename: "resume.pdf",
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      };
+  
+      await html2pdf().set(opt).from(element).save();
+  
+      // Restore original styles after PDF generation
+      element.style.position = "absolute";
+      element.style.visibility = "hidden";
     } catch (error) {
-        console.error("PDF generation error:", error);
+      console.error("PDF generation error:", error);
     } finally {
-        setIsGenerating(false);
+      setIsGenerating(false);
     }
-};
+  };
+  
 
 
   const onSubmit = async (data) => {
